@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
 import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
@@ -8,6 +7,7 @@ import 'package:flutter_animated_dialog/flutter_animated_dialog.dart';
 import 'package:flutter_application_1/singletons/cameras.dart';
 import 'package:flutter_application_1/singletons/pose_marks.dart';
 import 'package:google_ml_kit/google_ml_kit.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
 import '../constant/routes.dart';
@@ -44,67 +44,86 @@ class _PostureDetectionState extends State<PostureDetection> {
             ? FutureBuilder(
                 future: _initializeControllerFuture,
                 builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.done) {
-                    return Center(
-                      child: SizedBox(
-                          height: double.infinity,
-                          child: CameraPreview(_cameraController)),
-                    );
-                  } else {
-                    return const Center(child: CircularProgressIndicator());
-                  }
+                  return snapshot.connectionState == ConnectionState.done
+                      ? Center(
+                          child: SizedBox(
+                              height: double.infinity,
+                              child: CameraPreview(_cameraController)))
+                      : const Center(child: CircularProgressIndicator());
                 },
               )
             : resultDrawingDialog(context),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () async {
-            // Ensure that the camera is initialized.
-            await _initializeControllerFuture;
-            int countdown = 3;
-            showAnimatedDialog(
-                context: context,
-                builder: (context) =>
-                    StatefulBuilder(builder: ((context, innerSetState) {
-                      Timer.periodic(const Duration(seconds: 1), (timer) async {
-                        innerSetState(() =>
-                            countdown >= 0 ? countdown -= 1 : timer.cancel());
+        floatingActionButton: Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            // Pick image for detection:
+            FloatingActionButton(
+              heroTag: null,
+              onPressed: () async {
+                final ImagePicker _picker = ImagePicker();
+                // Pick an image
+                final XFile? image =
+                    await _picker.pickImage(source: ImageSource.gallery);
+                if (image != null) {
+                  List<Pose> poses = await analyzePose(image.path);
 
-                        if (countdown == 0) {
-                          timer.cancel();
-                          Navigator.of(context).pop();
-                          final image = await _cameraController.takePicture();
+                  _landmarks.clear();
+                  for (Pose pose in poses) {
+                    // to access all landmarks
+                    pose.landmarks.forEach((_, landmark) {
+                      _landmarks.add(landmark);
+                    });
+                  }
+                  setState(() {});
+                }
+              },
+              child: const Icon(Icons.photo),
+            ),
+            const SizedBox(height: 16),
 
-                          InputImage inputImage =
-                              InputImage.fromFilePath(image.path);
-                          imgFile = File(image.path);
-                          final decodedImage = await decodeImageFromList(
-                              imgFile.readAsBytesSync());
+            // Take picture in 3 sec count down:
+            FloatingActionButton(
+              heroTag: null,
+              onPressed: () async {
+                // Ensure that the camera is initialized.
+                await _initializeControllerFuture;
+                int countdown = 3;
+                showAnimatedDialog(
+                    context: context,
+                    builder: (context) =>
+                        StatefulBuilder(builder: ((context, innerSetState) {
+                          Timer.periodic(const Duration(seconds: 1),
+                              (timer) async {
+                            innerSetState(() => countdown >= 0
+                                ? countdown -= 1
+                                : timer.cancel());
 
-                          imgHeight = decodedImage.height.toDouble();
-                          imgWidth = decodedImage.width.toDouble();
+                            if (countdown == 0) {
+                              timer.cancel();
 
-                          PoseDetector poseDetector =
-                              GoogleMlKit.vision.poseDetector();
-                          List<Pose> poses =
-                              await poseDetector.processImage(inputImage);
+                              Navigator.of(context).pop();
 
-                          _landmarks.clear();
-                          for (Pose pose in poses) {
-                            // to access all landmarks
-                            pose.landmarks.forEach((_, landmark) {
-                              _landmarks.add(landmark);
-                            });
-                          }
-                          setState(() {});
-                        }
-                      });
+                              final image =
+                                  await _cameraController.takePicture();
+                              List<Pose> poses = await analyzePose(image.path);
 
-                      return AlertDialog(
-                        title: Text('$countdown'),
-                      );
-                    })));
-          },
-          child: const Icon(Icons.camera),
+                              _landmarks.clear();
+                              for (Pose pose in poses) {
+                                // to access all landmarks
+                                pose.landmarks.forEach((_, landmark) {
+                                  _landmarks.add(landmark);
+                                });
+                              }
+                              setState(() {});
+                            }
+                          });
+
+                          return AlertDialog(title: Text('$countdown'));
+                        })));
+              },
+              child: const Icon(Icons.camera),
+            ),
+          ],
         ),
       );
     }
@@ -115,8 +134,6 @@ class _PostureDetectionState extends State<PostureDetection> {
       child: VisibilityDetector(
         key: const Key('posture_check_key'),
         onVisibilityChanged: (visibilityInfo) {
-          log('visibilityInfo: ${visibilityInfo.visibleFraction} of child widget is visible');
-
           if (visibilityInfo.visibleFraction == 0) return;
 
           double earShoulder = PoseMarks.instance.earShoulderAngle;
@@ -267,5 +284,17 @@ class _PostureDetectionState extends State<PostureDetection> {
         Cameras.instance.cams[cameraIndex], ResolutionPreset.max);
 
     _initializeControllerFuture = _cameraController.initialize();
+  }
+
+  Future<List<Pose>> analyzePose(String path) async {
+    InputImage inputImage = InputImage.fromFilePath(path);
+    imgFile = File(path);
+    final decodedImage = await decodeImageFromList(imgFile.readAsBytesSync());
+
+    imgHeight = decodedImage.height.toDouble();
+    imgWidth = decodedImage.width.toDouble();
+
+    PoseDetector poseDetector = GoogleMlKit.vision.poseDetector();
+    return poseDetector.processImage(inputImage);
   }
 }
