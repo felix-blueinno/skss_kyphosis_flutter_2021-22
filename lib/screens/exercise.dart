@@ -157,7 +157,10 @@ class _ExerciseState extends State<Exercise> {
     final inputImage =
         InputImage.fromBytes(bytes: bytes, inputImageData: inputImageData);
 
-    final poseDetector = GoogleMlKit.vision.poseDetector();
+    final poseDetector = GoogleMlKit.vision.poseDetector(
+        poseDetectorOptions: PoseDetectorOptions(
+            model: PoseDetectionModel.accurate,
+            mode: PoseDetectionMode.streamImage));
     final List<Pose> poses = await poseDetector.processImage(inputImage);
 //     print('poses.length: ${poses.length}');
 
@@ -175,6 +178,7 @@ class _ExerciseState extends State<Exercise> {
       Stages.currentStage = Stages.exercise2Instruction;
       Navigator.pushReplacementNamed(context, Routes.exerciseInstruction);
     } else if (Stages.currentStage == Stages.exercise2Completed) {
+      Stages.currentStage = Stages.sessionCompleted;
       Navigator.pushReplacementNamed(context, Routes.complete);
     } else if (mounted) {
       setState(() {});

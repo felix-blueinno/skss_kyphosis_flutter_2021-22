@@ -8,6 +8,7 @@ class Stages {
   static const String exercise2 = 'exercise2';
   static const String exercise2Instruction = 'exercise2_instruction';
   static const String exercise2Completed = 'exercise2_completed';
+  static const String sessionCompleted = 'session_completed';
 
   static String currentStage = checkInstruction;
 }
