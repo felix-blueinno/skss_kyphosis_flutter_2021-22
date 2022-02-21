@@ -7,8 +7,8 @@ class ExerciseSupervisor {
   final Stopwatch _stopwatch = Stopwatch();
 
   int exercise1Round = 0; // Current round
-  final int exercise1MaxRounds = 1; // Maximum number of round
-  final int _exercise1MaxTime = 2; // Time for each round
+  final int exercise1MaxRounds = 3; // Maximum number of round
+  final int _exercise1MaxTime = 5; // Time for each round
 
   int exercise2Count = 0;
   final int _exercise2MaxCount = 10;

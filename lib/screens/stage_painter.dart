@@ -2,7 +2,7 @@ import 'dart:math';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/singletons/pose_marks.dart';
-import 'package:flutter_application_1/singletons/exercise_stop_watch.dart';
+import 'package:flutter_application_1/singletons/exercise_supervisor.dart';
 import 'package:google_ml_kit/google_ml_kit.dart';
 import '../constant/stages.dart';
 import '../helper/logger.dart';
@@ -267,6 +267,8 @@ class PosePainter extends CustomPainter {
 
     int remainingTime =
         supervisor.exercise1MaxTime - supervisor.stopwatchElapsedSeconds;
+
+    drawText('請維持$remainingTime秒', 24, Colors.green, canvas, size);
     drawText(
         '已完成${supervisor.exercise1Round} / ${supervisor.exercise1MaxRounds} 次',
         24,
@@ -279,17 +281,15 @@ class PosePainter extends CustomPainter {
     int elapsedSecond = supervisor.stopwatchElapsedSeconds;
     int maxTime = supervisor.exercise1MaxTime;
     bool stopwatchIsRunning = supervisor.stopwatchIsRunning;
-    int exercise1Count = supervisor.exercise1Round;
     int exercise1MaxCount = supervisor.exercise1MaxRounds;
 
     if (correctPose && !stopwatchIsRunning && elapsedSecond < maxTime) {
       supervisor.startStopwatch();
-      drawText('請維持$remainingTime秒', 24, Colors.green, canvas, size);
     } else if (elapsedSecond >= maxTime) {
       supervisor.reset();
-      exercise1Count += 1;
+      supervisor.exercise1Round += 1;
 
-      if (exercise1Count == exercise1MaxCount) {
+      if (supervisor.exercise1Round == exercise1MaxCount) {
         Stages.currentStage = Stages.exercise1Completed;
         Logger.log('currentStage: ${Stages.currentStage}');
       }
@@ -310,9 +310,11 @@ class PosePainter extends CustomPainter {
 
     double elbowAngle = 180 - (elbowShoulderAngle + elbowWristAngle);
     drawText(
-        supervisor.exercise2Count.toString(), 24, Colors.white, canvas, size);
-    drawText(elbowAngle.toStringAsFixed(3), 24, Colors.white, canvas, size,
-        offset: const Offset(0, 50));
+        "已完成 ${supervisor.exercise2Count.toString()}/${supervisor.exercise2MaxCount}",
+        24,
+        Colors.white,
+        canvas,
+        size);
 
     if (elbowAngle > 90 && !supervisor.counted) {
       supervisor.exercise2Count += 1;
@@ -354,11 +356,10 @@ class PosePainter extends CustomPainter {
     final elbowShoulderAngle = _angleBetween(leftElbow!, leftShoulder!);
     final shoulderHipAngle = _angleBetween(leftShoulder!, leftHip!);
 
-    return (wristElbowAngle < 20 &&
-        elbowShoulderAngle < 20 &&
-        shoulderHipAngle < 20 &&
-        leftWrist!.dy < leftEar!.dy &&
-        leftElbow!.dy < leftShoulder!.dy);
+    return (wristElbowAngle < 30 &&
+        elbowShoulderAngle < 30 &&
+        shoulderHipAngle < 30 &&
+        leftWrist!.dy < leftEar!.dy);
   }
 
   double _angleBetween(Offset p1, Offset p2) {
