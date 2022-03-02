@@ -4,8 +4,10 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animated_dialog/flutter_animated_dialog.dart';
+import 'package:flutter_application_1/helper/logger.dart';
 import 'package:flutter_application_1/singletons/cameras.dart';
 import 'package:flutter_application_1/singletons/pose_marks.dart';
+import 'package:flutter_application_1/singletons/record.dart';
 import 'package:google_ml_kit/google_ml_kit.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:visibility_detector/visibility_detector.dart';
@@ -140,20 +142,21 @@ class _PostureDetectionState extends State<PostureDetection> {
           double shoulderHip = PoseMarks.instance.shoulderHipAngle;
           double hipAnkle = PoseMarks.instance.hipAnkleAngle;
 
-          String title = '姿勢正確';
-          String content = '''
+          if (earShoulder != 360 && shoulderHip != 360 && hipAnkle != 360) {
+            // Decides displaying messages:
+            String title = (earShoulder > 20) ? '姿勢不正確' : '姿勢正確';
+
+            String content = '''
 耳朵與肩膀之間的角度： ${earShoulder.toStringAsFixed(2)}°,
 肩膀與臀部之間的角度： ${shoulderHip.toStringAsFixed(2)}°,
 臀部與腳踝之間的角度： ${hipAnkle.toStringAsFixed(2)}°
 ''';
+            Record.instance.postureCorrect = (earShoulder > 20);
+            Record.instance.earShoulder = earShoulder.toStringAsFixed(2);
+            Record.instance.shoulderHip = shoulderHip.toStringAsFixed(2);
+            Record.instance.hipAnkle = hipAnkle.toStringAsFixed(2);
+            Logger.log(Record.instance.hipAnkle);
 
-          if (earShoulder != 360 && shoulderHip != 360 && hipAnkle != 360) {
-            // Decides displaying messages:
-            if (earShoulder > 20) {
-              title = '姿勢不正確';
-            } else if (earShoulder <= 10 && shoulderHip < 10) {
-              title = '姿勢正確';
-            }
             showAnimatedDialog(
                 context: context,
                 builder: (innerContext) => AlertDialog(

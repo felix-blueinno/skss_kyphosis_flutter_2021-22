@@ -5,6 +5,7 @@ import 'package:flutter_animated_dialog/flutter_animated_dialog.dart';
 import 'package:flutter_application_1/constant/hive_keys.dart';
 import 'package:flutter_application_1/constant/routes.dart';
 import 'package:flutter_application_1/constant/stages.dart';
+import 'package:flutter_application_1/singletons/record.dart';
 import 'package:hive/hive.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
@@ -30,6 +31,7 @@ class _DashBoardState extends State<DashBoard> {
     super.initState();
 
     box = Hive.box(MyHive.userStatus);
+
     route = box.length == 0 ? Routes.questionaire : Routes.postureDetection;
 
     Timer(const Duration(milliseconds: 700),
@@ -43,6 +45,7 @@ class _DashBoardState extends State<DashBoard> {
       onVisibilityChanged: (visibilityInfo) {
         if (visibilityInfo.visibleFraction > 0) {
           Stages.currentStage = Stages.checkInstruction;
+          Record.instance.reset();
         }
       },
       child: Scaffold(
@@ -53,16 +56,23 @@ class _DashBoardState extends State<DashBoard> {
               // If user finished questionaire previously:
               if (box.length != 0)
                 IconButton(
-                    onPressed: () =>
-                        // Push to user_profile page,
-                        // when returned dashboard,
-                        // refresh UI if user deleted the questionaire record:
-                        Navigator.pushNamed(context, Routes.userProfile)
-                            .whenComplete(() => setState(() => route =
-                                box.length == 0
-                                    ? Routes.questionaire
-                                    : Routes.postureDetection)),
-                    icon: const Icon(Icons.person_rounded)),
+                  onPressed: () =>
+                      // Push to user_profile page,
+                      // when returned dashboard,
+                      // refresh UI if user deleted the questionaire record:
+                      Navigator.pushNamed(context, Routes.userProfile)
+                          .whenComplete(() => setState(() => route =
+                              box.length == 0
+                                  ? Routes.questionaire
+                                  : Routes.postureDetection)),
+                  icon: const Icon(Icons.person_rounded),
+                ),
+
+              IconButton(
+                onPressed: () =>
+                    Navigator.pushNamed(context, Routes.exerciseHistory),
+                icon: const Icon(Icons.receipt_long_rounded),
+              ),
             ],
           ),
           body: SingleChildScrollView(

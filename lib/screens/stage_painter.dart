@@ -3,6 +3,7 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/singletons/pose_marks.dart';
 import 'package:flutter_application_1/singletons/exercise_supervisor.dart';
+import 'package:flutter_application_1/singletons/record.dart';
 import 'package:google_ml_kit/google_ml_kit.dart';
 import '../constant/stages.dart';
 import '../helper/logger.dart';
@@ -289,6 +290,8 @@ class PosePainter extends CustomPainter {
       supervisor.reset();
       supervisor.exercise1Round += 1;
 
+      Record.instance.exercise1Rounds = supervisor.exercise1Round;
+
       if (supervisor.exercise1Round == exercise1MaxCount) {
         Stages.currentStage = Stages.exercise1Completed;
         Logger.log('currentStage: ${Stages.currentStage}');
@@ -319,6 +322,8 @@ class PosePainter extends CustomPainter {
     if (elbowAngle > 90 && !supervisor.counted) {
       supervisor.exercise2Count += 1;
       supervisor.counted = true;
+
+      Record.instance.exercise2Count = supervisor.exercise2Count;
     } else if (elbowAngle < 80 && supervisor.counted) {
       supervisor.counted = false;
     }

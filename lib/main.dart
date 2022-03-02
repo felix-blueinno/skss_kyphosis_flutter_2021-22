@@ -2,8 +2,10 @@ import 'dart:async';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_application_1/model/exercise_record.dart';
 import 'package:flutter_application_1/screens/complete.dart';
 import 'package:flutter_application_1/screens/exercise.dart';
+import 'package:flutter_application_1/screens/exercise_history.dart';
 import 'package:flutter_application_1/screens/exercise_instructions.dart';
 import 'package:flutter_application_1/singletons/cameras.dart';
 import 'package:flutter_application_1/screens/questionaire.dart';
@@ -24,7 +26,9 @@ main() async {
   // Init local database:
   await Hive.initFlutter();
   Hive.registerAdapter(UserStatusAdapter());
+  Hive.registerAdapter(ExerciseRecordAdapter());
   await Hive.openBox(MyHive.userStatus);
+  await Hive.openBox(MyHive.exerciseRecord);
 
   // Find all available cameras:
   Cameras.instance.cams = await availableCameras();
@@ -39,6 +43,7 @@ main() async {
       Routes.exercise: (context) => const Exercise(),
       Routes.exerciseInstruction: (context) => const ExerciseInstruction(),
       Routes.complete: (context) => const Complete(),
+      Routes.exerciseHistory: (context) => const ExerciseHistory(),
     },
     home: const SplashScreen(),
   ));

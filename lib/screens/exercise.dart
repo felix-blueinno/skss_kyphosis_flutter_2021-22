@@ -6,7 +6,9 @@ import 'package:flutter_application_1/constant/routes.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_ml_kit/google_ml_kit.dart';
 import '../constant/stages.dart';
+import '../helper/logger.dart';
 import '../singletons/cameras.dart';
+import '../singletons/record.dart';
 import 'stage_painter.dart';
 
 class Exercise extends StatefulWidget {
@@ -31,6 +33,8 @@ class _ExerciseState extends State<Exercise> {
     super.initState();
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     initCamera(cameraIndex);
+
+    Logger.log(Record.instance.hipAnkle);
   }
 
   @override
