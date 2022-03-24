@@ -1,16 +1,21 @@
-# flutter_application_1
+# SKSS SRT-2 (Flutter)
+This project is tested on Android devices. 
 
-A new Flutter project.
+Find the apk: https://drive.google.com/file/d/1eiYPq8GKtAQwpL9V_UNx1Crih8mnKXSB/view?usp=sharing
 
-## Getting Started
 
-This project is a starting point for a Flutter application.
+## Flutter Installation
 
-A few resources to get you started if this is your first Flutter project:
+Official guideline: https://docs.flutter.dev/get-started/install
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
+<br>
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Running this project
+
+1. Make sure Flutter SDK is installed, running `flutter doctor` in terminal should generate report of Flutter info on the computer.
+2. Make sure Android Studio is installed, output of `flutter doctor` in terminal should generate reports if Android is enabled successfully.
+   Android guideline: follow the official guideline base on your computer OS.
+4. `cd` to the project and run `flutter pub get` to install necessary libraries/packages.
+5. Connect the Android device to the computer, tap `allow connection` on the device (if any).
+6. `cd` to the project and run `flutter run` to install on device. (Follow the instructions shown on the terminal (if any)).
+ 
